@@ -1,0 +1,9 @@
+create table text_spider (
+id int(4) auto_increment primary key,
+text_link varchar(100) unique,
+title varchar(255),
+push_time varchar(40),
+read_count varchar(20),
+img_list text,
+text_content text
+);

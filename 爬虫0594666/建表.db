@@ -1,0 +1,34 @@
+create table store_kind (
+ID int(4) auto_increment primary key,
+kind_name varchar(255),
+kind_href varchar(255) unique
+);
+
+create table store(
+ID  int(8) auto_increment primary key,
+store_name varchar(255),
+store_href varchar(255) unique,
+kind_id int(4),
+credit_count int(4),
+albums_url1 varchar(100),
+albums_url2 varchar(100),
+soufu_url varchar(100),
+QQ1 varchar(50),
+QQ2 varchar(50),
+wechart varchar(40),
+phone varchar(40),
+address varchar(255),
+wechart_code varchar(50),
+product varchar(255),
+foreign key(kind_id) references store_kind(ID)
+);
+
+create table albums(
+ID int(12) auto_increment primary key,
+albums_name varchar(255),
+store_id int(8),
+albums_href varchar(255) unique,
+img_url text,
+other_msg text,
+foreign key(store_id) references store(ID)
+);

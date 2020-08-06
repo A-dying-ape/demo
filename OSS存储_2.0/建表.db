@@ -1,0 +1,17 @@
+create table finger(
+id int(8)  auto_increment primary key,
+path varchar(128),
+fingermd5 varchar(128),
+fingersha1 varchar(128),
+filesize int(5)
+);
+
+create table user_albums(
+ID int(12) auto_increment primary key,
+albums_name varchar(255),
+store_id int(8),
+albums_href varchar(255),
+img_url text,
+other_msg text,
+foreign key(store_id) references store(ID)
+);
