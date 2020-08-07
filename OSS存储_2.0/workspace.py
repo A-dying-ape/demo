@@ -57,23 +57,29 @@ class Upload_Img():
                     temp_list = []
                     for img_url in img_url_list:
                         response = request(img_url, headers=headers, proxies_list=ip_pool, verify=False)
-                        fsize = dict(response.headers).get("Content-Length")
                         if response is None:
                             print(info)
                             print(img_url)
+                            continue
+                        fsize = response.headers.get("Content-Length")
+                        if fsize is None:
                             continue
                         fmd5 = md5hash(response.content)
                         fsha1 = sha1hash(response.content)
                         code_dict = self.handle_finger(fmd5, fsha1, fsize)
                         path = code_dict["path"]+ "/" + str(code_dict["id"])
                         if code_dict["code"] == 0:
-                            bou.put_object(path, response.content)
+                            try:
+                                bou.put_object(path, response.content)
+                            except:
+                                time.sleep(5)
+                                bou.put_object(path, response.content)
                         temp_list.append(path)
                     self.update_albums(str(temp_list), info)
                 else:
                     print(info)
 
-    def handle_finger(self, fmd5, fsha1, fsize, path="images"):
+    def handle_finger(self, fmd5, fsha1, fsize, path="xqe/images"):
         conn = ConnMysql()
         ssql = """select count(*) from finger where fingermd5="%s" and fingersha1="%s";""" % (fmd5, fsha1)
         isql = """insert into finger (path,fingermd5,fingersha1,filesize) values ("%s","%s","%s",%s)""" % (path, fmd5, fsha1, fsize)
@@ -91,6 +97,10 @@ class Upload_Img():
         conn = ConnMysql()
         sql = """insert into user_albums (albums_name,store_id,albums_href,img_url,other_msg) values ("%s","%s","%s","%s","%s");""" % (info["albums_name"], info["store_id"], info["albums_href"], img_url, info["other_msg"])
         conn.sql_change_msg(sql)
+
+    def __del__(self):
+        conn = ConnMysql()
+        conn.release()
 
     def run(self):
         process_list = []
