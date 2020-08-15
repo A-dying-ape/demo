@@ -1,5 +1,5 @@
 import pymysql
-from sqlpool.sqlsetting import mysqlInfo
+from sqlpool.sqlsetting import MYSQL_INFO
 from DBUtils.PooledDB import PooledDB
 
 
@@ -26,12 +26,12 @@ class ConnMysql(object):
                 maxusage=None,
                 setsession=[],
                 ping=2,
-                host=mysqlInfo['host'],
-                user=mysqlInfo['user'],
-                passwd=mysqlInfo['passwd'],
-                db=mysqlInfo['db'],
-                port=mysqlInfo['port'],
-                charset=mysqlInfo['charset'])
+                host=MYSQL_INFO['host'],
+                user=MYSQL_INFO['user'],
+                passwd=MYSQL_INFO['passwd'],
+                db=MYSQL_INFO['db'],
+                port=MYSQL_INFO['port'],
+                charset=MYSQL_INFO['charset'])
         return __pool.connection()
 
     # 插入、修改、删除一条

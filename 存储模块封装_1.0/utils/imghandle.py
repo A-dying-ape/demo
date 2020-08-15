@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+from PIL import Image
 
 
 def showImage(img_path):
@@ -13,7 +14,6 @@ def showImage(img_path):
         else:
             os.startfile(img_path)
     except:
-        from PIL import Image
         img = Image.open(img_path)
         img.show()
         img.close()

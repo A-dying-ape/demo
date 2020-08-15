@@ -1,4 +1,4 @@
-mysqlInfo = {
+MYSQL_INFO = {
     "host": '',
     "user": '',
     "passwd": '',

@@ -7,7 +7,7 @@ def ucookies(url):
     """
     获取请求的cookie
     :param url: 请求地址
-    :return: ccookie进一步处理
+    :return: ccookies进一步处理
     """
     cookie = cookiejar.CookieJar()
     handler = request.HTTPCookieProcessor(cookie)
@@ -19,7 +19,6 @@ def ucookies(url):
 def ccookies(cookies):
     """
     处理cookie
-    :return:
     :param cookies: cookie可迭代对象
     :return: 字典k:cookies.name,v:cookies.value
     """

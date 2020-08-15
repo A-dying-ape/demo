@@ -1,15 +1,15 @@
 import oss2
-from bucket.bucket_setting import mybucket_info
+from bucket.bucket_setting import BUCKET_INFO
 from itertools import islice
 
 
-AKI = mybucket_info['access_key_id']
-AKS = mybucket_info['access_key_secret']
-BN = mybucket_info['bucket_name']
-INT_INSIDER = mybucket_info['internal_endpoint']
-INT_OUTSIDER = mybucket_info['intranet_endpoint']
-INT_SPEEDUP = mybucket_info['speedup_endpoint']
-PERMISSION = mybucket_info['permission']
+AKI = BUCKET_INFO['access_key_id']
+AKS = BUCKET_INFO['access_key_secret']
+BN = BUCKET_INFO['bucket_name']
+INT_INSIDER = BUCKET_INFO['internal_endpoint']
+INT_OUTSIDER = BUCKET_INFO['intranet_endpoint']
+INT_SPEEDUP = BUCKET_INFO['speedup_endpoint']
+PERMISSION = BUCKET_INFO['permission']
 AUTH = oss2.Auth(AKI, AKS)
 BUCKET = oss2.Bucket(AUTH, INT_INSIDER, BN)
 

@@ -1,7 +1,4 @@
 # coding:utf-8
-"""
-对目标服务器进行请求判断，如果返回的是错误的信息，则等待1s重新请求，共请求3次
-"""
 import requests
 import random
 from retrying import retry
@@ -19,7 +16,6 @@ def _parse_url(url, headers, proxies_list, verify, method):
         assert response.text != ""
     except:
         response = requests.get(url, headers=headers, proxies=random.choices(proxies_list)[0], timeout=5)
-    assert response.status_code == 200
     return response
 
 
