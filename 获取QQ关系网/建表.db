@@ -1,0 +1,13 @@
+create table qquser(
+id int auto_increment primary key,
+uin int(11) unique,
+nick char(32),
+break tinyint(1)
+)charset=utf8;
+
+create table qqsaysay(
+id int auto_increment primary key,
+uin int(11),
+saysay text,
+img text
+)charset=utf8;
