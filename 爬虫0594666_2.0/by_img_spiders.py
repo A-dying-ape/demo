@@ -28,8 +28,8 @@ class By_Img_Spiders():
         }
         self.server_url = "service/album/get_album_themes_list.jsp"
         self.ip_pool = ip_pool
-        self.conn = pymysql.connect(host="", port=, user="", password="",
-                                    database="", charset="")
+        self.conn = pymysql.connect(host="39.99.136.116", port=3306, user="xuqien", password="jscH8PtwfCScAdjR",
+                                    database="xuqien", charset="utf8")
         self.crs = self.conn.cursor()
         self.cut_rule = 100
         self.q = queue.Queue()
@@ -209,18 +209,20 @@ class By_Img_Spiders():
             else:
                 print("未知错误：" + yupoo_url)
 
-    def get_ypimg_page(self, albums_href, store_id):
+    def get_ypimg_page(self, albums_href, store_id, num=1, img_href=None):
         """
         获取每个相册的信息，并对数据进行清洗放入队列
         :param albums_href:
         :param store_id:
         :return: None
         """
+        if img_href is None:
+            img_href = list()
         try:
-            albums_href1 = albums_href + "&tab=min"
+            albums_href1 = albums_href + "&tab=min" + "&page=" + str(num)
             response = request_url(albums_href1, headers=self.headers, proxies_list=self.ip_pool)
         except:
-            response = request_url(albums_href, headers=self.headers, proxies_list=self.ip_pool)
+            response = request_url(albums_href + "&page=" + str(num), headers=self.headers, proxies_list=self.ip_pool)
         try:
             html = etree.HTML(response.text)
         except:
@@ -240,17 +242,20 @@ class By_Img_Spiders():
                 if len(imgs) <= 0:
                     imgs = html.xpath(
                         "//div[@class='showalbum__parent showalbum__max max']/div[@class='showalbum__children image__main']/div[@class='image__imagewrap']/img/@src")
-            img_href = list()
-            for img in imgs:
-                img = "http:" + img
-                img_href.append(img)
-            img_href = str(img_href)
-            albums_info = (albums_name, store_id, albums_href, img_href, str(other_msg))
-            insert_albums = "insert into albums (albums_name,store_id,albums_href,img_url,other_msg) values %s on duplicate key update %s;" % (
-                str(albums_info),
-                """albums_name="%s",store_id=%s,albums_href="%s",img_url="%s",other_msg="%s" """ % albums_info)
-            insert_albums = re.sub(r"\n|\\|\r|\t|\r\n|\n\r", "", insert_albums)
-            self.q.put(insert_albums)
+            if len(imgs) <= 0:
+                img_href = str(img_href)
+                albums_info = (albums_name, store_id, albums_href, img_href, str(other_msg))
+                insert_albums = "insert into albums (albums_name,store_id,albums_href,img_url,other_msg) values %s on duplicate key update %s;" % (
+                    str(albums_info),
+                    """albums_name="%s",store_id=%s,albums_href="%s",img_url="%s",other_msg="%s" """ % albums_info)
+                insert_albums = re.sub(r"\n|\\|\r|\t|\r\n|\n\r", "", insert_albums)
+                self.q.put(insert_albums)
+            else:
+                for img in imgs:
+                    img = "http:" + img
+                    img_href.append(img)
+                num += 1
+                self.get_ypimg_page(albums_href, store_id, num=num, img_href=img_href)
 
     def get_other_msg(self, other_headers, url, store_id, shop_id, page_num=1):
         """
