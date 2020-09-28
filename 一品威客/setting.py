@@ -1,6 +1,6 @@
 # 账号设置
-ACCOUNT = "15205009113"
-PASSWORD= "cwq123456"
+ACCOUNT = ""
+PASSWORD= ""
 
 # 需求发布地址
 DEMAND_ADDR = ["福州市", "厦门市"]
