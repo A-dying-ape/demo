@@ -1,0 +1,33 @@
+# !/usr/bin/env python
+# coding=utf-8
+
+
+import os
+
+
+# 项目根目录
+project_path = r"{$project_path$}"
+# 工作空间等待js响应最大时长
+timeout = {$timeout$}
+# frida远程IP端口
+frida_host = r"{$frida_host$}"
+# adb远程IP端口
+adb_host = r"{$adb_host$}"
+# app英文包名
+app_name_en = r"{$app_name_en$}"
+# app中文包名
+app_name_ch = r"{$app_name_ch$}"
+# 当app卡死要激活的UI
+app_ui = r"{$app_ui$}"
+# 工作空间的uuid路径
+uuid_path = os.path.join(os.path.join(os.path.join(project_path, "workspaces"), r"{$workspace$}"), "uuid")
+# hook脚本路径
+hook_script = os.path.join(os.path.join(project_path, "hookscript"), r"{$hook_script$}")
+# 请求地址
+get_url = {$get_url$}
+# 回调地址
+post_url = {$post_url$}
+# 登录的微信username
+username = r"{$username$}"
+# 消息通知
+inform_url = r"{$inform_url$}"

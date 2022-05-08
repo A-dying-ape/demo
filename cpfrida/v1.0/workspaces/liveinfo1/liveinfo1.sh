@@ -1,0 +1,1 @@
+nohup python3.8 -u E:\workspace\wx_project\备份\vx_pro_v5.0/workspace/liveinfo1/liveinfo1.py >/dev/null 2>&1 &

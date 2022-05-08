@@ -1,0 +1,1 @@
+nohup python3.8 -u E:\workspace\wx_project\备份\vx_pro_v6.0/workspaces/device1/device1.py >/dev/null 2>&1 &
