@@ -1,0 +1,6 @@
+fire==0.4.0
+frida==15.1.10
+frida-tools==10.5.4
+parsel==1.6.0
+pip freeze >requirements.txt
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/

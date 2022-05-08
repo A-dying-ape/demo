@@ -6,13 +6,13 @@ import os
 
 
 # 项目根目录
-project_path = r"E:\workspace\wx_project\备份\vx_pro_v6.0"
+project_path = r"E:\workspace\wx_project\备份\v2.0"
 # 工作空间等待js响应最大时长
 timeout = 150
 # frida远程IP端口
-frida_host = r"172.23.30.126:10400"
+frida_host = r"114.114.114.114:10400"
 # adb远程IP端口
-adb_host = r"172.23.30.126:10700"
+adb_host = r"114.114.114.114:10700"
 # app英文包名
 app_name_en = r"com.tencent.mm"
 # app中文包名
@@ -30,4 +30,4 @@ post_url = {"comment": "http://172.23.10.70:8182/comment/8018/callback?uuid={}&h
 # 登录的微信username
 username = r""
 # 消息通知
-inform_url = r"https://open.feishu.cn/open-apis/bot/v2/hook/97b44a2e-1b80-4dea-bda7-6ebf2309e6ac"
+inform_url = r"https://open.feishu.cn/open-apis/bot/v2/hook/1234"

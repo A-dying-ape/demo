@@ -20,6 +20,9 @@ cmd_str = r"""#!/bin/bash
 source /etc/profile
 echo "============================== Linux deploy start ! =============================="
 crontab -l | grep -v '{project_path}/workspaces/monitor' | crontab -
+cd {project_path}/startproject
+python3.8 /wechatserver/wxhook/startproject/kill_process.py
+cd {project_path}/deploy
 python3.8 {project_path}/deploy/deploy.py receive_workspace
 python3.8 {project_path}/deploy/deploy.py release_workspace
 sleep 3

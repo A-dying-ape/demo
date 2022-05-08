@@ -87,14 +87,12 @@ class HandleAlarm(Monitor):
 
 
 if __name__ == '__main__':
-    url = "http://inner_wxtoken.xiguaji.com/Monitor/GetWxVideoDeviceList"
+    url = "http://www.baidu.com"
     ha = HandleAlarm(url)
     try:
-        while True:
-            cmd_start_list = ha.run()
-            for cmd in cmd_start_list:
-                multiprocessing.Process(target=ha.restart_process, args=(cmd,)).start()
-            ha.logger.info(str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))) + " -- :" + "巡查完一轮设备!")
-            time.sleep(300)
+        cmd_start_list = ha.run()
+        for cmd in cmd_start_list:
+            multiprocessing.Process(target=ha.restart_process, args=(cmd,)).start()
+        ha.logger.info(str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))) + " -- :" + "巡查完一轮设备!")
     except Exception as e:
         ha.logger.error(str(e))
