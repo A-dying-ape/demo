@@ -15,19 +15,8 @@ class FixedParams(object):
     cookie_file = config.uuid_path.replace("uuid", "cookie")
     # 当前设备微信号的username
     username = config.username
-    # 直播广场参数构造
-    live_square_param = {
-        "YBJ": [],
-        "YBI": False,
-        "YBK": 0,
-        "includeUnKnownField": False,
-        "YBD": 88890,
-        "YBF": False,
-        "YBE": "推荐",
-        "object_id": 0,
-        "YBH": False,
-        "YBG": False
-    }
+
+    """小时榜"""
     # 小时榜地区映射表
     area_tab = {
         "华南赛区": 1,
@@ -38,6 +27,7 @@ class FixedParams(object):
         "西南赛区": 6,
         "西北赛区": 7
     }
+    """带货中心"""
     # 带货中心商品一级分类映射表
     categoryId = {
         '全部': '0',
@@ -73,58 +63,8 @@ class FixedParams(object):
         '有赞': 13,
         '小程序联盟': 14
     }
-    # 业务休眠
-    sleep_time = {
-        "comment": {
-            "begin": 0,
-            "end": 0
-        },
-        "detail": {
-            "begin": 5,
-            "end": 5
-        },
-        "hourlist": {
-            "begin": 300,
-            "end": 300,
-            "each": 5
-        },
-        "livebarrage": {
-            "begin": 10,
-            "end": 10
-        },
-        "liveinfo": {
-            "begin": 30,
-            "end": 40
-        },
-        "livecontribution": {
-            "begin": 0,
-            "end": 0
-        },
-        "livegoods": {
-            "begin": 3,
-            "end": 3
-        },
-        "livesquare": {
-            "begin": 120,
-            "end": 180
-        },
-        "product": {
-            "begin": 3,
-            "end": 3
-        },
-        "topic": {
-            "begin": 16,
-            "end": 16
-        },
-        "videogoods": {
-            "begin": 3,
-            "end": 3
-        },
-        "videourl": {
-            "begin": 0,
-            "end": 0
-        },
-    }
+
+    """消息通知"""
     # 告警通知
     inform_text = {
         "msg_type": "post",
@@ -141,6 +81,16 @@ class FixedParams(object):
                             {
                                 "tag": "text",
                                 "text": "device",
+                            },
+                        ],
+                        [
+                            {
+                                "tag": "text",
+                                "text": "业务信息："
+                            },
+                            {
+                                "tag": "text",
+                                "text": "business",
                             },
                         ],
                         [
@@ -166,7 +116,7 @@ class FixedParams(object):
                             },
                             {
                                 "tag": "text",
-                                "text": "当前设备hook回调的数据多次异常，设备存在被风控的风险，现在自动剔除运维名单，请确认后手动添加回运维名单中。"
+                                "text": "当前设备hook回调的数据多次异常，设备存在被风控的风险，请留意此设备"
                             }
                         ],
                         [

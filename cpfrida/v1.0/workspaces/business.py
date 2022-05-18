@@ -12,6 +12,7 @@ import json
 import random
 import config
 import requests
+import control
 sys.path.append("../common")
 sys.path.append("../../common")
 from extend import Extend
@@ -25,12 +26,24 @@ class AdapterBusiness(Extend, BaseScript, Inform):
     """
     Adapter = dict()
 
-    def __init__(self, device, url, full_path=""):
+    def __init__(
+            self,
+            filename,
+            full_path=""
+    ):
         Extend.__init__(self)
-        BaseScript.__init__(self, device, url, full_path)
+        BaseScript.__init__(self, filename, full_path)
         Inform.__init__(self, config.inform_url)
         for i in dir(self):
             self.Adapter[i] = getattr(self, i)
+
+    def hooker_xlog(self):
+        """
+        hook xlog
+        :return:
+        """
+        self.check_frida()
+        self.frida_object.exports.hooker_xlog()
 
     def hooker_video_url(self):
         """
@@ -141,26 +154,30 @@ class AdapterBusiness(Extend, BaseScript, Inform):
         hook直播广场
         """
         for i in self.get_response.get("data").get("cates"):
-            if i.get("cateid") > 10:
+            if i.get("cateid") > 13:
                 continue
             self.check_frida()
+            self.logger.info(i.get("catename"))
             self.frida_object.exports.hooker_live_square(
                 self.device,
                 {
-                    "VHZ": i.get("cateid"),
-                    "VIa": i.get("catename"),
-                    "VIb": False,
-                    "VIc": False,
-                    "VId": False,
-                    "VIe": False,
-                    "VIf": [],
-                    "VIg": 0,
+                    "YBD": i.get("cateid"),
+                    "YBE": i.get("catename"),
+                    "YBF": False,
+                    "YBI": False,
+                    "YBH": False,
+                    "YBG": False,
+                    "YBJ": [],
+                    "YBK": 0,
                     "data": "",
                     "includeUnKnownField": False,
                     "object_id": 0
                 }
             )
             self.wait()
+            if self.flag:
+                self.restart_app()
+                self.unload_frida()
 
     def hooker_live_goods(self):
         """
@@ -226,7 +243,6 @@ class AdapterBusiness(Extend, BaseScript, Inform):
         """
         self.frida_object.exports.hooker_video_comment(
             self.device,
-            False,
             self.get_response
         )
 
@@ -313,12 +329,7 @@ class AdapterBusiness(Extend, BaseScript, Inform):
             self.wait()
         else:
             self.logger.error("can't find this device: %s" % self.device)
-        time.sleep(
-            random.randint(
-                self.sleep_time.get(self.device).get("begin"),
-                self.sleep_time.get(self.device).get("end")
-            )
-        )
+        self.vx_start_thread(self.device)
 
 
 class HandleBusiness(AdapterBusiness):
@@ -327,8 +338,12 @@ class HandleBusiness(AdapterBusiness):
     """
     Handle = dict()
 
-    def __init__(self, device, url, full_path=""):
-        AdapterBusiness.__init__(self, device, url, full_path)
+    def __init__(
+            self,
+            filename,
+            full_path=""
+    ):
+        AdapterBusiness.__init__(self, filename, full_path)
         for i in dir(self):
             self.Handle[i] = getattr(self, i)
 
@@ -339,18 +354,19 @@ class HandleBusiness(AdapterBusiness):
         """
         self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
-        self.get_cookie(self.post_response.get("result").get("VWA"))
+        self.risk_control_flag = False
+        self.get_cookie(self.post_response.get("result").get("YSm"))
 
     def comment(self, post_url):
         """
         视频评论
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
-        self.flag = True
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
+        if int(self.post_response.get("continueFlag")) == 0:
+            self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def detail(self, post_url):
@@ -358,10 +374,11 @@ class HandleBusiness(AdapterBusiness):
         主页信息
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
-        self.flag = True
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
+        if int(self.post_response.get("continueFlag")) == 0:
+            self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def hourlist(self, post_url):
@@ -380,10 +397,10 @@ class HandleBusiness(AdapterBusiness):
         直播间弹幕
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
         self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def liveinfo(self, post_url):
@@ -391,11 +408,11 @@ class HandleBusiness(AdapterBusiness):
         直播间信息
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
-        if self.device == self.post_response.get("device"):
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
+        if int(self.post_response.get("flag")) != 2:
             self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def livecontribution(self, post_url):
@@ -403,10 +420,10 @@ class HandleBusiness(AdapterBusiness):
         直播间热度贡献榜
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
         self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def livegoods(self, post_url):
@@ -414,10 +431,10 @@ class HandleBusiness(AdapterBusiness):
         直播间带货
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
         self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def livesquare(self, post_url):
@@ -425,7 +442,7 @@ class HandleBusiness(AdapterBusiness):
         直播广场
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
         if int(self.post_response.get("type")) == 2:
             if int(self.post_response.get("hasnext")) == 0:
                 self.flag = True
@@ -448,7 +465,7 @@ class HandleBusiness(AdapterBusiness):
                 self.logger.info("the cookie has expired. obtain it again.")
                 self.flag = True
             else:
-                status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+                status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
                 self.flag = True
                 self.logger.info(str(self.post_response.get("device")) + str(status))
         else:
@@ -459,24 +476,24 @@ class HandleBusiness(AdapterBusiness):
                 self.get_cookie(self.post_response.get("result").get("VWA"))
                 self.flag = True
             else:
-                status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+                status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
                 if self.post_response.get("method") == "GetProduct" or self.post_response.get("method") == "GetShopCenter":
                     self.flag = True
                 self.logger.info(str(self.post_response.get("device")) + str(status))
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
 
     def topic(self, post_url):
         """
         话题和活动
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
         if int(self.post_response.get("continueFlag")) == 0:
             self.flag = True
         else:
             self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def videogoods(self, post_url):
@@ -484,10 +501,10 @@ class HandleBusiness(AdapterBusiness):
         视频挂链
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
         self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def videourl(self, post_url):
@@ -495,10 +512,10 @@ class HandleBusiness(AdapterBusiness):
         视频播放地址
         :param post_url : 数据回调地址
         """
-        status = requests.post(post_url, json.dumps(self.post_response).encode("utf-8").decode("latin1"))
+        status = requests.post(post_url, json.dumps(self.post_response, ensure_ascii=False).encode("utf-8").decode("latin1"))
         self.flag = True
         self.wait_count = 0
-        self.remove_monitor = False
+        self.risk_control_flag = False
         self.logger.info(str(self.post_response.get("device")) + str(status))
 
     def handle_business(self):
@@ -508,6 +525,6 @@ class HandleBusiness(AdapterBusiness):
         try:
             post_url = config.post_url.get(self.post_response.get("device")).format(self.uuid, self.addr)
         except Exception as e:
-            self.logger.info("currently, it is an internal service")
+            self.logger.info("currently, it is an internal service.")
             post_url = None
         self.Handle[self.post_response.get("device")](post_url)

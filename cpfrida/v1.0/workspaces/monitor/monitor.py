@@ -10,6 +10,8 @@ import time
 import psutil
 import platform
 import telnetlib
+sys.path.append("..")
+import control
 sys.path.append("../../common")
 from logging_model import Logging
 from phone_model import Phone
@@ -28,9 +30,10 @@ class Monitor(Logging, Phone, Process):
         :param full_path : 完整路径
         """
         self.full_path = full_path
-        Logging.__init__(self, filename, self.full_path)
+        Logging.__init__(self, "monitor", self.full_path)
         Phone.__init__(self, filename, self.full_path)
-        Process.__init__(self, filename, monitor_file="monitor_conf.ini", full_path=self.full_path)
+        Process.__init__(self, filename, "monitor_conf.ini", full_path=self.full_path)
+        self.read_monitor_conf()
 
     def get_all_devices(self):
         """
@@ -53,7 +56,7 @@ class Monitor(Logging, Phone, Process):
                 if "python" in process.cmdline()[0] and d in process.cmdline()[1]:
                     create_time = process.create_time()
                     curr_time = time.time()
-                    if int(curr_time - create_time) > 60 * 60 * 6:
+                    if int(curr_time - create_time) % control.main_process_pool_run_time > control.restart_phone_time:
                         err_pro.append(d)
                         continue
                 else:
@@ -64,7 +67,7 @@ class Monitor(Logging, Phone, Process):
                 err_pro.append(d)
         return err_pro
 
-    def handle_devices(self, devices):
+    def get_device_ip_port(self, devices):
         """
         处理异常的设备
         :return 处理成功的设备
@@ -72,21 +75,8 @@ class Monitor(Logging, Phone, Process):
         start_cmd = []
         for device in devices:
             self.read_pro_conf(device)
-            while True:
-                try:
-                    self.kill_process(self.pro_conf["process"]["pid"])
-                    self.reboot(self.monitor_conf["devices"][device])
-                    if platform.system() == 'Windows':
-                        start_cmd.append(str(self.pro_conf["process"]["exe"]) + " " + str(self.pro_conf["process"]["path"]))
-                    elif platform.system() == 'Linux':
-                        start_cmd.append("nohup " + str(self.pro_conf["process"]["exe"]) + " -u " + str(self.pro_conf["process"]["path"]) + " >/dev/null 2>&1 &")
-                    else:
-                        raise Exception("unknown system.")
-                    break
-                except Exception as e:
-                    self.reboot(self.monitor_conf["devices"][device])
-                    self.logger.error("kill process %s fail " % str(self.pro_conf["process"]["pid"]) + " : " + str(e), exc_info=False)
-            self.logger.info("reboot devices done: " + str(device))
+            start_cmd.append(self.monitor_conf["devices"][device])
+            self.logger.info("devices: " + str(device))
         return start_cmd
 
     def check_telnet(self, down_devices):
@@ -97,11 +87,39 @@ class Monitor(Logging, Phone, Process):
         """
         devices_list = list()
         for d in down_devices:
-            ip = self.monitor_conf["devices"][d].split(":")[0]
-            port = int("104" + self.monitor_conf["devices"][d].split(":")[1][3:])
+            adb_ip_port = self.monitor_conf["devices"][d]
+            ip = adb_ip_port.split(":")[0]
+            adb_port = adb_ip_port.split(":")[1]
+            frida_port = int("104" + adb_ip_port.split(":")[1][3:])
             try:
-                telnetlib.Telnet(ip, port, 2)
+                telnetlib.Telnet(ip, adb_port, 2)
+                telnetlib.Telnet(ip, frida_port, 2)
                 devices_list.append(d)
             except Exception as e:
-                pass
+                self.logger.error("%s telnet is not connect" % d)
         return devices_list
+
+    def handle_devices(self, devices):
+        """
+        处理异常的设备
+        :return 处理成功的设备
+        """
+        start_cmd = []
+        ip_port_list = []
+        for device in devices:
+            self.read_pro_conf(device)
+            while True:
+                try:
+                    self.kill_process(self.pro_conf["process"]["pid"])
+                    ip_port_list.append(self.monitor_conf["devices"][device])
+                    if platform.system() == 'Windows':
+                        start_cmd.append(str(self.pro_conf["process"]["exe"]) + " " + str(self.pro_conf["process"]["path"]))
+                    elif platform.system() == 'Linux':
+                        start_cmd.append("nohup " + str(self.pro_conf["process"]["exe"]) + " " + str(self.pro_conf["process"]["path"]) + " >/dev/null 2>&1 &")
+                    else:
+                        raise Exception("unknown system.")
+                    break
+                except Exception as e:
+                    self.logger.error("kill process %s fail " % str(self.pro_conf["process"]["pid"]) + " : " + str(e), exc_info=False)
+            self.logger.info("reboot devices done: " + str(device))
+        return start_cmd, ip_port_list

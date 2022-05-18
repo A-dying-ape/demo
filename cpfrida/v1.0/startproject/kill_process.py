@@ -12,33 +12,13 @@
 
 import os
 import sys
-import configparser
+import time
+import psutil
+import platform
 
 
-def read_conf(config_path):
-    """
-    读取配置文件
-    :param config_path:配置文件路径
-    :return:配置文件
-    """
-    config = None
-    try:
-        config = configparser.ConfigParser()
-        config.read(config_path, encoding="utf-8")
-    except Exception as e:
-        print("no configuration file " + str(e))
-    return config
-
-
-def read_process():
-    """
-    读取项目下的所有进程配置文件
-    :return: 完整的进程配置文件路径  list
-    """
-    process_path = os.path.join(os.path.join(read_conf("../deploy/build.ini")["project"]["path"], "workspaces"), "Process")
-    if os.path.exists(process_path) is False:
-        os.mkdir(process_path)
-    return [os.path.join(process_path, file) for file in os.listdir(process_path)]
+kill_cmd_lin = "kill -9 {}"
+kill_cmd_win = "taskkill /PID {} -f"
 
 
 def kill_pid():
@@ -46,13 +26,25 @@ def kill_pid():
     杀死所有的进程
     :return:
     """
-    for process in read_process():
-        conf = read_conf(process)
-        if conf:
-            pid = conf["process"]["pid"]
-            os.system("kill -9 %s" % pid)
+    pids = psutil.pids()
+    for pid in pids:
+        try:
+            p = psutil.Process(pid)
+            if "python" in p.name() and "kill_process" not in p.cmdline()[1]:
+                if platform.system() == 'Windows':
+                    os.system(kill_cmd_win.format(pid))
+                elif platform.system() == 'Linux':
+                    os.system(kill_cmd_lin.format(pid))
+                else:
+                    raise Exception("unknown system.")
+                time.sleep(1)
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
     kill_pid()
     sys.exit(0)
+
+
+

@@ -21,19 +21,20 @@ class Process(object):
     pro_conf = configparser.ConfigParser()
     monitor_conf = configparser.ConfigParser()
 
-    def __init__(self, filename, monitor_file="", full_path=""):
+    def __init__(self, device, monitor_file="", full_path=""):
         """
         初始化
-        :param filename : 工作空间
+        :param device : 工作空间
         :param monitor_file : 监控文件
         :param full_path : 完成路径
         """
-        self.filename = filename
+        self.filename = device
         self.monitor_file = monitor_file
         self.pro_path = os.path.join(full_path, self.pro_path)
         self.worker = os.path.join(os.path.join(full_path, self.filename), self.filename + ".py")
         self._check_process()
         self._record_process(self.read_pro_conf(self.filename))
+        self.read_monitor_conf()
 
     def _check_process(self):
         """
@@ -91,13 +92,13 @@ class Process(object):
         杀死当前python脚本
         :param pid : 进程ID
         """
-        self.read_pro_conf(pid)
         if platform.system() == 'Windows':
-            kill_cmd = self.kill_cmd_win.format(self.pro_conf['process']['pid'])
+            kill_cmd = self.kill_cmd_win
         elif platform.system() == 'Linux':
-            kill_cmd = self.kill_cmd_lin.format(str(pid))
+            kill_cmd = self.kill_cmd_lin
         else:
             raise Exception("unknown system.")
+        self.read_pro_conf(pid)
         if pid is None:
             os.system(kill_cmd.format(self.pro_conf['process']['pid']))
         else:

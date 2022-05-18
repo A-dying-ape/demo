@@ -22,8 +22,8 @@ class Ident(object):
         :param filename : 工作空间
         :param full_path : 完成路径
         """
-        self.filename = filename
-        self.work_path = os.path.join(full_path, filename)
+        self.ident_filename = filename
+        self.work_path = os.path.join(full_path, self.ident_filename)
         assert self._check_workspace(), "%s workspace does not exist" % self.work_path
         self.uuid_file = os.path.join(self.work_path, self.uuid_file)
 

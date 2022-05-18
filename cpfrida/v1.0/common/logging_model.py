@@ -14,10 +14,10 @@ class Logging(object):
     """
     日志模块
     """
-    logger = logging.getLogger()
     log_path = "Logs"
     when = "MIDNIGHT"
     backupCount = 7
+    logger = logging.getLogger()
 
     def __init__(self, filename, full_path=""):
         """
@@ -25,8 +25,8 @@ class Logging(object):
         :param filename : 工作空间
         :param full_path : 完成路径
         """
-        self.filename = filename
-        self.log_path = os.path.join(os.path.join(full_path, self.log_path), self.filename)
+        self.logger_filename = filename
+        self.log_path = os.path.join(os.path.join(full_path, self.log_path), self.logger_filename)
         self.log_file = str(filename) + '.log'
         self._check_log()
         self._export_log()

@@ -54,7 +54,8 @@ class Extend(FixedParams):
                 getattr(self, "wait")()
             else:
                 headers = dict()
-                headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+                headers[
+                    "Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
                 headers["Accept-Encoding"] = "gzip, deflate, br"
                 headers["Accept-Language"] = "zh-CN,zh;q=0.9"
                 headers["Cache-Control"] = "max-age=0"
@@ -69,7 +70,8 @@ class Extend(FixedParams):
                 headers["Sec-Fetch-Site"] = "same-origin"
                 headers["Sec-Fetch-User"] = "?1"
                 headers["Upgrade-Insecure-Requests"] = "1"
-                headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+                headers[
+                    "User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
                 resp = requests.get(url, headers=headers, verify=False)
                 cookie = resp.headers.get("Set-Cookie")
                 with open(self.cookie_file, "w", encoding="utf-8") as f:
@@ -92,22 +94,19 @@ class Extend(FixedParams):
         headers["Connection"] = "keep-alive"
         headers["Content-Length"] = "281"
         headers["Accept"] = "application/json, text/plain, */*"
-        headers[
-            "User-Agent"] = "Mozilla/5.0 (Linux; Android 10; ELE-AL00 Build/HUAWEIELE-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/86.0.4240.99 XWEB/3189 MMWEBSDK/20220204 Mobile Safari/537.36 MMWEBID/2924 MicroMessenger/8.0.20.2100(0x28001439) Process/toolsmp WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
+        headers["User-Agent"] = "Mozilla/5.0 (Linux; Android 10; ELE-AL00 Build/HUAWEIELE-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/86.0.4240.99 XWEB/3189 MMWEBSDK/20220204 Mobile Safari/537.36 MMWEBID/2924 MicroMessenger/8.0.20.2100(0x28001439) Process/toolsmp WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
         headers["Content-Type"] = "application/json"
         headers["Origin"] = "https://channels.weixin.qq.com"
         headers["X-Requested-With"] = "com.tencent.mm"
         headers["Sec-Fetch-Site"] = "same-origin"
         headers["Sec-Fetch-Mode"] = "cors"
         headers["Sec-Fetch-Dest"] = "empty"
-        headers[
-            "Referer"] = "https://channels.weixin.qq.com/mobile-support/pages/race/hour?finder_activity_id=FinderLiveActivityHourBoardLong3_opweyuy2l_1643084450&BannerId=finderactivity_1_13783311145357543482&finderusername=%s" % username
+        headers["Referer"] = "https://channels.weixin.qq.com/mobile-support/pages/race/hour?finder_activity_id=FinderLiveActivityHourBoardLong3_opweyuy2l_1643084450&BannerId=finderactivity_1_13783311145357543482&finderusername=%s" % username
         headers["Accept-Encoding"] = "gzip, deflate"
         headers["Accept-Language"] = "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7"
         headers["Cookie"] = self.vx_cookie
         if int(loop) < 1080:
-            loop = int(
-                (int(time.time()) - int(time.mktime(time.strptime("2022-01-23 15:00:00", "%Y-%m-%d %H:%M:%S")))) / 3600)
+            loop = int((int(time.time()) - int(time.mktime(time.strptime("2022-01-23 15:00:00", "%Y-%m-%d %H:%M:%S")))) / 3600)
         data = dict()
         data["activity_id"] = "FinderLiveActivityHourBoardLong3_opweyuy2l_1643084450"
         data["group_id"] = int(group_id)
@@ -126,8 +125,7 @@ class Extend(FixedParams):
         """
         try:
             for k, v in self.area_tab.items():
-                board_items, self_item, loop = self.get_listhour_web(response["data"].get("username"), v,
-                                                                     response["data"].get("loop"))
+                board_items, self_item, loop = self.get_listhour_web(response["data"].get("username"), v, response["data"].get("loop"))
                 time.sleep(self.sleep_time.get("hourlist").get("each"))
                 result = dict()
                 result["result"] = dict()
@@ -140,7 +138,7 @@ class Extend(FixedParams):
         except Exception as e:
             os.remove(self.cookie_file)
             self.vx_cookie = None
-            self.logger.info("the cookie has expired. obtain it again.")
+            self.logger.error("the cookie has expired. obtain it again: " + str(e), exc_info=self.debug)
             self.adapter_business()
 
     def handle_inform_text(self, **kwargs):
@@ -149,6 +147,7 @@ class Extend(FixedParams):
         :param kwargs : 修改目标
         :return 格式化后的消息
         """
-        self.inform_text["content"]["post"]["zh_cn"]["content"][0][1]["text"] = kwargs["device"]
-        self.inform_text["content"]["post"]["zh_cn"]["content"][3][1]["text"] = kwargs["err_msg"]
+        self.inform_text["content"]["post"]["zh_cn"]["content"][0][1]["text"] = kwargs["device"] + "  -->  " + kwargs["business"]
+        self.inform_text["content"]["post"]["zh_cn"]["content"][1][1]["text"] = kwargs["business_info"]
+        self.inform_text["content"]["post"]["zh_cn"]["content"][4][1]["text"] = kwargs["err_msg"]
         return self.inform_text

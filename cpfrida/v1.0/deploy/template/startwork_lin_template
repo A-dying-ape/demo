@@ -1,0 +1,1 @@
+nohup python3.8 {$project_path$}/workspaces/{$workspace$}/{$workspace$}.py >/dev/null 2>&1 &

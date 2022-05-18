@@ -154,7 +154,7 @@ class QuickBuildProject(object):
         else:
             if self._check_workspace(space_name):
                 workspace = os.path.join(self.workspaces, space_name)
-                bash = self.handle_template.format_template(space_name, "startwork_template")
+                bash = self.handle_template.format_template(space_name, "startwork_lin_template")
                 with open(os.path.join(workspace, space_name + ".sh"), "w", encoding="utf-8") as f:
                     f.write(bash)
             else:
@@ -173,6 +173,39 @@ class QuickBuildProject(object):
         else:
             print("{}工作空间不存在或工作空间下没有{}".format(space_name, space_name + ".sh"))
 
+    def _build_bat(self, space_name):
+        """
+        创建window下的工作空间启动脚本
+        :param space_name: (string)工作空间
+        :return: None
+        """
+        if self._check_file(space_name, space_name + ".bat"):
+            print(111)
+            print("{}工作空间下已有{}文件".format(space_name, space_name + ".bat"))
+        else:
+            print(222)
+            if self._check_workspace(space_name):
+                workspace = os.path.join(self.workspaces, space_name)
+                print(workspace)
+                bash = self.handle_template.format_template(space_name, "startwork_win_template")
+                with open(os.path.join(workspace, space_name + ".bat"), "w", encoding="utf-8") as f:
+                    f.write(bash)
+            else:
+                print("{}工作空间不存在.".format(space_name))
+
+    def _delete_bat(self, space_name):
+        """
+        删除window下的工作空间启动脚本
+        :param space_name: (string)工作空间
+        :return: None
+        """
+        if self._check_file(space_name, space_name + ".bat"):
+            workspace = os.path.join(self.workspaces, space_name)
+            config_path = os.path.join(workspace, space_name + ".bat")
+            os.remove(config_path)
+        else:
+            print("{}工作空间不存在或工作空间下没有{}".format(space_name, space_name + ".bat"))
+
     def _build_workers(self, space_name):
         """
         创建工作者
@@ -184,7 +217,7 @@ class QuickBuildProject(object):
         else:
             if self._check_workspace(space_name):
                 workspace = os.path.join(self.workspaces, space_name)
-                with open("./template/workspace_template", "r") as f:
+                with open("template/workspace_template", "r") as f:
                     work = f.read()
                 with open(os.path.join(workspace, space_name + ".py"), "w", encoding="utf-8") as f:
                     f.write(work)
@@ -254,7 +287,7 @@ class QuickBuildProject(object):
         else:
             print("{}工作空间下不存在或工作空间没有{}".format(space_name, "monitor_conf.ini"))
 
-    def receive_workspace(self, flag=False, space_name=None):
+    def receive_workspace(self, flag=0, space_name=None):
         """
         收纳当前项目下的所有工作空间
         :param flag: (bool)收纳的时候是否覆盖项目配置文件
@@ -287,7 +320,7 @@ class QuickBuildProject(object):
                         with open(os.path.join(worker_path, "uuid"), "r", encoding="utf-8") as f2:
                             content2 = f2.read()
                             config_dict["uuid"] = content2.strip()
-                        if flag:
+                        if int(flag):
                             self.build_ini_obj.write(open(self.build_ini, 'w', encoding='utf-8'), space_around_delimiters=False)
                     except Exception as e:
                         print("你已手动改过代码，请重新生成%s." % i)
@@ -320,7 +353,7 @@ class QuickBuildProject(object):
                 with open(os.path.join(worker_path, "uuid"), "r", encoding="utf-8") as f2:
                     content2 = f2.read()
                     config_dict["uuid"] = content2.strip()
-                if flag:
+                if int(flag):
                     self.build_ini_obj.write(open(self.build_ini, 'w', encoding='utf-8'), space_around_delimiters=False)
             except Exception as e:
                 print("你已手动改过代码，请重新生成%s." %space_name)
@@ -347,6 +380,7 @@ class QuickBuildProject(object):
                     self._build_config(i)
                     self._build_uuid(i)
                     self._build_sh(i)
+                    self._build_bat(i)
                     self._build_workers(i)
                     self.monitor_config["devices"][i] = self.build_ini_obj[i].get("adb_host")
                     self.monitor_config.write(open(os.path.join(self.monitor, "monitor_conf.ini"), "w", encoding="utf-8"), space_around_delimiters=False)
@@ -361,6 +395,7 @@ class QuickBuildProject(object):
                 self._build_config(space_name)
                 self._build_uuid(space_name)
                 self._build_sh(space_name)
+                self._build_bat(space_name)
                 self._build_workers(space_name)
                 if os.path.exists(os.path.join(self.monitor, "monitor_conf.ini")):
                     self.monitor_config["devices"][space_name] = self.build_ini_obj[space_name].get("frida_host")
@@ -376,8 +411,8 @@ class QuickBuildProject(object):
 
 
 if __name__ == '__main__':
-    # fire.Fire(QuickBuildProject())
-    QuickBuildProject().release_workspace()
+    fire.Fire(QuickBuildProject())
+    # QuickBuildProject().release_workspace()
     # QuickBuildProject().receive_workspace()
     # QuickBuildProject().release_workspace("comment4")
-    # QuickBuildProject().receive_workspace(False, "comment4")
+    # QuickBuildProject().receive_workspace(0, "comment4")

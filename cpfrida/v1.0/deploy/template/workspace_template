@@ -7,9 +7,12 @@
 
 import os
 import sys
+import time
 import json
 import config
+import multiprocessing
 sys.path.append("..")
+import control
 from business import HandleBusiness
 
 
@@ -18,21 +21,17 @@ class Script(HandleBusiness):
     filename = str(os.path.basename(__file__).split(".")[0])
 
     def __init__(self):
-        HandleBusiness.__init__(self, self.filename, os.path.join(config.project_path, "workspaces"))
+        HandleBusiness.__init__(
+            self,
+            self.filename,
+            os.path.join(config.project_path, "workspaces")
+        )
 
     def hook_data(self):
         """
         hook the entrance
         """
-        try:
-            self.adapter_business()
-        except Exception as e:
-            self.logger.error("func hook data error:" + str(e), exc_info=True)
-            if self.frida_object:
-                self.frida_object.unload()
-            self.logger.info("restart app ...")
-            self.restart_app()
-            self.frida_object = None
+        self.adapter_business()
 
     def my_message_handler(self, message, payload):
         """
@@ -43,23 +42,29 @@ class Script(HandleBusiness):
         if message["type"] == "send":
             try:
                 self.post_response = json.loads(message["payload"])
+                if control.console:
+                    print(self.device, message["payload"])
                 self.handle_business()
             except Exception as e:
-                self.logger.error("my_message_handler error:" + str(e), exc_info=True)
+                self.logger.error("my_message_handler error:" + str(e), exc_info=control.debug)
         else:
             self.logger.error("hook error:" + str(message), exc_info=False)
-            if self.remove_monitor:
+            self.unload_frida()
+            self.logger.info("restart_app ... ...")
+            self.restart_app()
+            if self.risk_control_flag:
                 self.logger.info("devices may be banned, remove the monitor option.")
-                status = self.inform(self.handle_inform_text(**{"device": self.filename, "err_msg": str(message)}))
+                status = self.inform(self.handle_inform_text(**{"device": self.filename, "business": self.device, "business_info": self.get_response, "err_msg": str(message)}))
                 self.logger.info("send inform %s ." % str(status))
-                self.remove_monitor_conf()
+                return
             else:
                 if "token" in str(message) and os.path.exists(self.cookie_file):
                     os.remove(self.cookie_file)
                     self.vx_cookie = None
                     self.logger.info("the cookie has expired. obtain it again.")
                 else:
-                    self.remove_monitor = True
+                    self.risk_control_flag = True
+                    time.sleep(control.hook_message_err_time)
 
     def run(self):
         """
@@ -70,12 +75,10 @@ class Script(HandleBusiness):
             try:
                 self.hook_data()
             except Exception as e:
-                self.logger.error("script run fail: " + str(e), exc_info=False)
-                self.logger.info("reboot phone ...")
-                self.reboot()
-                self.logger.info("restart app ...")
+                self.logger.error("script run fail: " + str(e), exc_info=control.debug)
+                self.unload_frida()
+                self.logger.info("restart_app ... ...")
                 self.restart_app()
-                self.frida_object = None
 
 
 if __name__ == "__main__":

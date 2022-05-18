@@ -19,6 +19,7 @@ import multiprocessing
 from multiprocessing import Queue
 
 
+project_path = "/wechatserver/wxhook"
 adb_connect = 'adb connect {}'
 adb_disconnect = 'adb disconnect {}'
 adb_reboot = 'adb -s {} reboot'
@@ -56,9 +57,9 @@ def reboot(conf, queue):
                 if rbc >= 5:
                     break
                 os.system(adb_connect.format(conf['devices'][device]))
-                time.sleep(1)
+                time.sleep(2)
                 os.system(adb_reboot.format(conf['devices'][device]))
-                time.sleep(1)
+                time.sleep(2)
                 os.system(adb_disconnect.format(conf['devices'][device]))
                 break
             except Exception as e:
@@ -68,7 +69,7 @@ def reboot(conf, queue):
 
 
 if __name__ == '__main__':
-    monitor_conf = os.path.join(os.path.join(os.path.join(read_conf("../deploy/build.ini")["project"]["path"], "workspaces"), "monitor"), "monitor_conf.ini")
+    monitor_conf = os.path.join(os.path.join(os.path.join(project_path, "workspaces"), "monitor"), "monitor_conf.ini")
     conf = read_conf(monitor_conf)
     queues = Queue()
     for device in conf.options('devices'):
